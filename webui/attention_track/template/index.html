@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attention track</title>
+    <script src="/static/js/jquery-3.7.1.min.js" type="text/javascript"></script>
+</head>
+<style>
+    html,
+    body {
+        height: 100vh;
+    }
+
+    .title {
+        height: 5vh;
+    }
+
+    .row {
+        display: flex;
+        height: 85vh;
+    }
+
+    .column-left {
+        padding: 10px;
+        height: 85vh;
+        margin: 8px;
+        /* border: 4px solid rgb(13, 0, 255); */
+    }
+
+    .column-left div {
+        margin-top: 8px;
+    }
+
+    .column-mid {
+        padding: 10px;
+        width: 800px;
+        max-height: 85vh;
+        border: 1px solid rgb(0, 0, 0);
+        overflow: auto;
+        scroll-behavior: smooth;
+    }
+
+    .column-right {
+        padding: 10px;
+        width: fit-content;
+        height: 85vh;
+        margin: 8px;
+    }
+
+    .button-area button {
+        /* background-color: #4CAF50; */
+        margin: 8px;
+        padding: 4px;
+    }
+
+    .button-area {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+    .message-area {
+        white-space: pre-line;
+        text-align: center;
+    }
+
+    .output_generation {
+        white-space: pre-line;
+        overflow: auto;
+        scroll-behavior: smooth;
+        height: 100%;
+    }
+
+    .parameter-area label {
+        width: 120px;
+        display: inline-block;
+        text-align: right;
+    }
+
+    .parameter-area input[type=color] {
+        border: none;
+        padding: 0px;
+        width: 50px;
+        height: 25px;
+        border-radius: 0px;
+        cursor: pointer;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .parameter-area input[type=color]:focus {
+        outline: none;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
+
+    .ul-empty {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+</style>
+
+<body>
+    <h1 class="title">Track Attention of LLM during generation</h1>
+
+    <div class="row">
+        <div class="column-left">
+            <p>Model name: {{ model_name }}</p>
+            <div id="input_area">
+                <div id="input_system_prompt">
+                    <label for="data_system_prompt">System prompt：</label>
+                    <br>
+                    <textarea id="data_system_prompt" rows="4" cols="50"></textarea>
+                </div>
+
+                <div id="input_user_prompt">
+                    <label for="data_user_prompt">User question：</label>
+                    <br>
+                    <textarea id="data_user_prompt" rows="8" cols="50"></textarea>
+                </div>
+            </div>
+
+            <div id="parameter-area" class="parameter-area">
+                <p>
+                    <label for="data_max_new_tokens">Max New Tokens</label>
+                    <input type="range" id="data_max_new_tokens" value="1024" min="1" max="4096" step="1">
+                    <span id="echo_max_new_tokens">1024</span>
+                </p>
+                <p>
+                    <label for="data_pause_duration">Pause Duration</label>
+                    <input type="range" id="data_pause_duration" value="100" min="0" max="1000" step="1">
+                    <span id="echo_pause_duration">100</span><span>ms</span>
+                </p>
+                <p>
+                    <label for="data_temperature">Temperature</label>
+                    <input type="range" id="data_temperature" min="0" max="2" step="0.01">
+                    <span id="echo_temperature">1</span>
+                </p>
+                <p>
+                    <label for="data_output_attention">With Attention</label>
+                    <input type="checkbox" id="data_output_attention">
+                </p>
+                <p>
+                    <label for="data_output_attention_layer_idx">Layer Index</label>
+                    <input type="range" id="data_output_attention_layer_idx" min="0" max="{{ num_hidden_layers - 1 }}"
+                        step="1">
+                    <span id="echo_output_attention_layer_idx">0</span>
+                </p>
+                <p>
+                    <label for="data_output_attention_head_idx">Head Index</label>
+                    <input type="range" id="data_output_attention_head_idx" min="0" max="{{ num_attention_heads - 1 }}"
+                        step="1">
+                    <span id="echo_output_attention_head_idx">0</span>
+                </p>
+                <p>
+                    <label for="data_do_sample">Do Sample</label>
+                    <input type="checkbox" id="data_do_sample">
+                </p>
+                <p>
+                    <label for="data_top_k">Top K</label>
+                    <input type="range" id="data_top_k" min="1" max="100" step="1">
+                    <span id="echo_top_k">10</span>
+                </p>
+                <p>
+                    <label for="data_top_p">Top P</label>
+                    <input type="range" id="data_top_p" min="0" max="1" step="0.01">
+                    <span id="echo_top_p">0.9</span>
+                </p>
+                <p>
+                    <label for="data_color_text">Text Color</label>
+                    <input type="color" id="data_color_text">
+                </p>
+                <p>
+                    <label for="data_color_min">Color Min</label>
+                    <input type="color" id="data_color_min">
+                </p>
+                <p>
+                    <label for="data_color_max">Color Max</label>
+                    <input type="color" id="data_color_max">
+                </p>
+                {# <p> <!--Jinia template comment-->
+                <div id="data_attention_rescale">
+                    <label>Attention Rescale</label>
+                    <input type="radio" id="data_checkbox_linear" name="data_attention_rescale">
+                    <span>linear</span>
+                    <input type="radio" id="data_checkbox_log" name="data_attention_rescale">
+                    <span>log</span>
+                </div>
+                </p> #}
+            </div>
+            <div id="message-area" class="message-area">
+            </div>
+            <div id="button-area" class="button-area">
+                <button id="button_start">Start</button>
+                <button id="button_pause">Pause</button>
+                <button id="button_stop">Stop</button>
+            </div>
+        </div>
+
+        <div class="column-mid">
+            <div id="output_generation" class="output_generation"></div>
+        </div>
+
+        <div class="column-right">
+            <div id="attention-area" class="attention-area">
+                <p>Count of largest attention score:
+                    <span id="echo_count_max_attn_score_counts"></span>
+                    <span id="echo_count_max_attn_score_token"></span>
+                </p>
+                <p>
+                    <label for="data_topk_tokens">Top K tokens</label>
+                    <input type="range" id="data_topk_tokens" min="1" max="50" step="1">
+                    <span id="echo_topk_tokens"></span>
+                </p>
+                <div id="display_topk_tokens"></div>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    class ColorInterpolator {
+        constructor(begin_color, end_color) {
+            this.begin_color = this.any_to_rgb(begin_color);
+            this.end_color = this.any_to_rgb(end_color);
+
+            this.slop = [
+                this.end_color[0] - this.begin_color[0],
+                this.end_color[1] - this.begin_color[1],
+                this.end_color[2] - this.begin_color[2],
+            ];
+        }
+
+        any_to_rgb(color) {
+            let r, g, b;
+            if (typeof color == "string") {
+                if (color[0] == '#') {
+                    r = parseInt(color.slice(1, 3), 16);
+                    g = parseInt(color.slice(3, 5), 16);
+                    b = parseInt(color.slice(5, 7), 16);
+                } else if (color.startsWith("rgb")) {
+                    r = parseInt(color.slice(4, 7));
+                    g = parseInt(color.slice(9, 12));
+                    b = parseInt(color.slice(14, 17));
+                }
+            } else {
+                r = color[0];
+                g = color[1];
+                b = color[2];
+            }
+            return [r, g, b];
+        }
+
+        color_to_hex(color) {
+            let r = Math.round(color[0]) & 0xff;
+            let g = Math.round(color[1]) & 0xff;
+            let b = Math.round(color[2]) & 0xff;
+            let c = (r << 16) | (g << 8) | b;
+            return "#" + c.toString(16).padStart(6, "0");
+        }
+
+        get_color(t) {
+            return this.color_to_hex([
+                this.begin_color[0] + this.slop[0] * t,
+                this.begin_color[1] + this.slop[1] * t,
+                this.begin_color[2] + this.slop[2] * t,
+            ]);
+        }
+    };
+
+    const MathStatistic = {
+        max: function (array) {
+            return array.reduce((a, b) => Math.max(a, b), -Infinity);
+        },
+        min: function (array) {
+            return array.reduce((a, b) => Math.min(a, b), Infinity);
+        },
+        mean: function (array) {
+            if (array.length == 0) {
+                return 0;
+            }
+            return array.reduce((a, b) => a + b, 0) / array.length;
+        },
+        std: function (array, mean = undefined) {
+            if (array.length == 0) {
+                return 0;
+            }
+            if (mean == undefined) {
+                mean = this.mean(array);
+            }
+            return Math.sqrt(array.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / array.length);
+        },
+        rescale_01: function (array, min = undefined, max = undefined) {
+            if (array.length == 0) {
+                return array;
+            }
+            if (array.length == 1) {
+                return [1];
+            }
+            min = min == undefined ? this.min(array) : min;
+            max = max == undefined ? this.max(array) : max;
+            const slop = max - min;
+            if (slop == 0) {
+                return array.map(x => 0);
+            }
+            return array.map(x => (x - min) / slop);
+        },
+        argmax: function (array) {
+            return array.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+        },
+        sort: function (array) {
+            return array.slice().sort((a, b) => a - b);
+        },
+        topk: function (array, k) {
+            // return the sorted array with indices
+            return array.slice().map((x, i) => [x, i]).sort((a, b) => b[0] - a[0]).slice(0, k);
+        },
+        sort_index: function (array) {
+            return array.slice().map((x, i) => [x, i]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+        }
+    };
+
+    class SSEChatStream {
+        constructor(normalize_attention = true, topk=10) {
+            this.uuid = undefined;
+            this.status = "idle";
+            this.token_array = new Array();
+            this.attention_array = undefined;
+            this.normalize_attention = normalize_attention;
+            // information before normalize
+            // this.statistic_raw = undefined;
+            this.topk = topk;
+            this.topk_tokens = undefined;
+            this.max_attn_tokens_count = {};
+        }
+
+        is_done() {
+            return this.status == "done";
+        }
+
+        update_attention_array(array) {
+            // compute stastic
+            let min = MathStatistic.min(array);
+            let max = MathStatistic.max(array);
+            // let mean = MathStatistic.mean(array);
+            // let std = MathStatistic.std(array, mean);
+
+            // this.statistic_raw = {
+            //     min: min,
+            //     max: max,
+            //     mean: mean,
+            //     std: std,
+            // };
+
+            if (this.normalize_attention) {
+                this.attention_array = MathStatistic.rescale_01(array, min, max);
+            } else {
+                this.attention_array = array;
+            }
+
+            // get top k attention
+            let topk = MathStatistic.topk(array, this.topk);
+            // topk, array of [attention, index, token]
+            this.topk_tokens = topk.map(x => [x[0], x[1], this.token_array[x[1]]]);
+
+            // get max attention tokens count
+            const _tk = this.topk_tokens[0];
+            if (_tk[2] in this.max_attn_tokens_count) {
+                this.max_attn_tokens_count[_tk[2]] += 1;
+            } else {
+                this.max_attn_tokens_count[_tk[2]] = 1;
+            }
+
+            return this.attention_array;
+        }
+
+        async start(
+            data,
+            on_generating = async (token_array, data) => { },
+            on_start = async (uuid) => { },
+            on_end = async (token_array) => { },
+        ) {
+            // clear the token array
+            this.token_array.splice(0);
+
+            const response = await fetch(
+                "/sse/chat_stream",
+                {
+                    method: "POST",
+                    cache: "no-cache",
+                    keepalive: true,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "text/event-stream",
+                    },
+                    body: JSON.stringify(data),
+                }
+            );
+
+            const reader = response.body.getReader();
+            var buffer = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                // decode 
+                buffer += new TextDecoder("utf-8").decode(value);
+                // to object
+                let _begin = 0;
+                for (let _i = 0; _i < buffer.length; _i++) {
+                    if (buffer[_i] != '\n') {
+                        continue;
+                    }
+                    // debugger;
+                    try {
+                        const data = JSON.parse(buffer.slice(_begin, _i));
+                        // self define protocal from server to client
+                        if (data.status == "start") {
+                            this.uuid = data.uuid;
+                            this.status = "generating";
+                            await on_start(this.uuid);
+                        } else if (data.status == "end") {
+                            this.token_array.push(data.current);
+                            this.status = "end";
+                            this.uuid = undefined;
+                            await on_end(this.token_array);
+                        } else if (data.status == "generating") {
+                            this.token_array.push(data.current);
+                            if (data.attention) {
+                                this.update_attention_array(data.attention);
+                            } else {
+                                this.attention_array = undefined;
+                            }
+                            await on_generating(this.token_array, this.attention_array);
+                        } else {
+                            console.log(`unknow status ${data.status}`);
+                        }
+                    } catch (e) {
+                        console.log(e);
+                    }
+                    _begin = _i + 1;
+                }
+                buffer = buffer.slice(_begin, buffer.length);
+            }
+        }
+
+        async set_output_attention(
+            output_attention = null,
+            output_attention_layer_idx = null,
+            output_attention_head_idx = null,
+            success = (data, textStatus, jqXHR) => { },
+        ) {
+            if (this.uuid == undefined) {
+                console.log("uuid is undefined");
+                return;
+            }
+            if (output_attention == null && output_attention_layer_idx == null && output_attention_head_idx == null) {
+                console.log("all is null");
+                return;
+            }
+            await $.get(
+                "/sse/chat_stream/setting",
+                {
+                    uuid: this.uuid,
+                    output_attention: output_attention,
+                    output_attention_layer_idx: output_attention_layer_idx,
+                    output_attention_head_idx: output_attention_head_idx,
+                },
+                success = success,
+            );
+        }
+
+
+        async set_pause_duration(pause_duration = null, success = () => { }) {
+            if (this.uuid == undefined) {
+                console.log("uuid is undefined");
+                return;
+            }
+            if (pause_duration == null) {
+                console.log("pause_duration is null");
+                return;
+            }
+            await $.get(
+                "/sse/chat_stream/pause_duration",
+                {
+                    uuid: this.uuid,
+                    pause_duration: pause_duration,
+                },
+                success = success,
+            );
+        }
+
+        async set_pause(pause, success = () => { }) {
+            if (this.uuid == undefined) {
+                console.log("uuid is undefined");
+                return false;
+            }
+            await $.get(
+                "/sse/chat_stream/pause",
+                {
+                    uuid: this.uuid,
+                    pause: pause,
+                },
+                success = success,
+            )
+            return pause;
+        }
+
+        async set_stop(success = () => { }) {
+            if (!this.uuid) {
+                return;
+            }
+            await $.get(
+                "/sse/chat_stream/stop",
+                {
+                    uuid: this.uuid,
+                },
+                success = success,
+            )
+        }
+    };
+
+</script>
+
+<script>
+    const MetaData = {
+        system_prompt: "You are a helpful assistant.",
+        user_prompt: "",
+
+        max_new_tokens: 1024,
+        pause_duration: 100, // ms
+        temperature: 1.0,
+
+        do_sample: true,
+        top_p: 0.9,
+        top_k: 10,
+
+        output_attention: true,
+        output_attention_layer_idx: 0,
+        output_attention_head_idx: 0,
+
+        color_text: "#000000",
+        color_min: "#ffffff",
+        color_max: "#000000",
+
+        topk_tokens: 10,
+
+        _output_genetation: "#output_generation",
+        _color_interpolator: undefined,
+
+        _paused: false,
+        _stoped: false,
+        _sse: undefined,
+
+
+        is_pause_or_stop: function () {
+            return this._paused || this._stoped;
+        },
+
+        get_conversation: function () {
+            return [
+                {
+                    role: "system",
+                    content: this.system_prompt,
+                },
+                {
+                    role: "user",
+                    content: this.user_prompt,
+                }
+            ]
+        },
+
+        get_color_interpolator: function () {
+            if (this._color_interpolator == undefined) {
+                this._color_interpolator = new ColorInterpolator(this.color_min, this.color_max);
+            }
+            return this._color_interpolator;
+        },
+
+        delay_for_ms: async function (ms) {
+            await new Promise(res => setTimeout(res, ms));
+        },
+
+        get_sse(normalize_attention = true) {
+            if (this._sse == undefined) {
+                this._sse = new SSEChatStream(normalize_attention, topk=this.topk_tokens);
+            }
+            return this._sse;
+        },
+
+        set_value: async function (key, value) {
+            this[key] = value;
+            if (key.startsWith("color_")) {
+                if (key == "color_min" || key == "color_max") {
+                    this._color_interpolator = undefined;
+                    this.get_color_interpolator();
+                }
+                if (this.is_pause_or_stop() && this._sse) {
+                    // update color
+                    this.set_output_generation(this._sse.token_array, this._sse.attention_array);
+                }
+            } else if (key == "output_attention") {
+                $("#data_output_attention_layer_idx").prop("disabled", !value);
+                $("#data_output_attention_head_idx").prop("disabled", !value);
+                if (this._sse) {
+                    await this._sse.set_output_attention(
+                        this.output_attention,
+                        this.output_attention_layer_idx,
+                        this.output_attention_head_idx,
+                    );
+                }
+            } else if (key == "do_sample") {
+                $("#data_top_k").prop("disabled", !value);
+                $("#data_top_p").prop("disabled", !value);
+            } else if (key == "output_attention_layer_idx" || key == "output_attention_head_idx") {
+                if (this._sse) {
+                    await this._sse.set_output_attention(
+                        this.output_attention,
+                        this.output_attention_layer_idx,
+                        this.output_attention_head_idx,
+                    );
+                }
+            } else if (key == "pause_duration" && this._sse) {
+                await this._sse.set_pause_duration(this.pause_duration);
+            } else if (key == "topk_tokens" && this._sse) {
+                this._sse.topk = value;
+            }
+        },
+
+        set_pause: async function (state = undefined) {
+            // flip the pause state
+            if (state == undefined) {
+                state = !this._paused;
+            }
+
+            if (this._sse) {
+                this._paused = await this._sse.set_pause(state);
+            } else {
+                this._paused = state;
+            }
+
+            if (this._paused) {
+                $("#button_pause").text("Resume");
+            } else {
+                $("#button_pause").text("Pause");
+            }
+            return this._paused;
+        },
+
+        set_stop: function (state = true) {
+            this._stoped = state;
+            if (state && this._sse) {
+                this._sse.set_stop();
+            }
+            if (this._stoped) {
+                $("#button_start").prop("disabled", false);
+            }
+        },
+
+        set_output_generation: function (token_array, attention) {
+            const _output = $(this._output_genetation);
+            let buffer = undefined;
+            if (attention) {
+                const color_interpolator = this.get_color_interpolator();
+                buffer = new Array(attention.length);
+                for (let i = 0; i < attention.length; i++) {
+                    const _c = color_interpolator.get_color(attention[i]);
+                    buffer[i] = `<span style="background-color:${_c}; color:${this.color_text}">${token_array[i]}</span>`;
+                }
+            } else {
+                buffer = token_array;
+            }
+            if (this.is_pause_or_stop()) {
+                _output.html(buffer.join(""));
+            } else {
+                _output.html(buffer.join("") + '<span>_</span>');
+            }
+            _output[0].scrollTop = _output[0].scrollHeight;
+
+            // debugger
+            if (this._sse) {
+                if (this._sse.topk_tokens) {
+                    // ol
+                    let _olli = $("#display_topk_tokens");
+                    _olli.html(`<table style="text-align: right;"> 
+                    <thead>
+                        <tr>
+                            <th style="width:5em;">Index</th>
+                            <th style="width:5em;">Probability</th>
+                            <th style="width:10em;">Token</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    </table>`);
+                    let _tbody = _olli.find("tbody");
+                    // debugger;
+                    for (let i = 0; i < this._sse.topk_tokens.length; i++) {
+                        const _ait = this._sse.topk_tokens[i];
+                        const _a = Number.parseFloat(_ait[0]).toFixed(4);
+                        const _t = _ait[2];
+                        if (_t == "\n") {
+                            _tbody.append(`<tr><td>${_ait[1]}</td><td>${_a}</td><td>\\n</td></tr>`);
+                        } else {
+                            _tbody.append(`<tr><td>${_ait[1]}</td><td>${_a}</td><td>${_t}</td></tr>`);
+                        }
+                    }
+
+                    if (this._sse.max_attn_tokens_count) {
+                        let _tk = this._sse.topk_tokens[0];
+                        // debugger;
+                        let statistic = this._sse.max_attn_tokens_count;
+                        $("#echo_count_max_attn_score_token").text(_tk[2] == "\n" ? "\\n" : _tk[2]);
+                        $("#echo_count_max_attn_score_counts").text(statistic[_tk[2]]);
+                    }
+                }
+            }
+        },
+    };
+
+    $("#apply_template_button").click(function () {
+        $.ajax({
+            type: "POST",
+            url: "/api/apply_chat_template",
+            data: JSON.stringify({
+                conversation: get_conversation(),
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                if (data.status == "success") {
+                    $("#generate_output").text(data.content);
+                }
+            }
+        });
+    });
+
+    $("#button_start").click(function () {
+        // set this button unavaliable
+        $("#button_start").prop("disabled", true);
+
+        const sse = MetaData.get_sse();
+        const _output = $("#output_generation");
+        _output.empty();
+
+        const message_area = $("#message-area");
+        message_area.text("... waiting ...");
+
+        sse.start(
+            {
+                conversation: MetaData.get_conversation(),
+                do_sample: MetaData.do_sample,
+                top_k: MetaData.top_k,
+                top_p: MetaData.top_p,
+                temperature: MetaData.temperature,
+                max_new_tokens: MetaData.max_new_tokens,
+                output_attention: MetaData.output_attention,
+                output_attention_layer_idx: MetaData.output_attention_layer_idx,
+                output_attention_head_idx: MetaData.output_attention_head_idx,
+                pause_duration: MetaData.pause_duration,
+            },
+            on_generating = (token_array, attention) => {
+                MetaData.set_output_generation(token_array, attention);
+            },
+            on_start = async () => {
+                message_area.text("... generating ...");
+                MetaData.set_stop(false);
+                MetaData.set_pause(false);
+            },
+            on_end = async (token_array) => {
+                message_area.text("... end ...");
+                MetaData.set_stop(true);
+            },
+        );
+    });
+
+    $("#button_pause").click(function () {
+        MetaData.set_pause();
+    });
+
+    $("#button_stop").click(function () {
+        MetaData.set_stop(true);
+    });
+
+    // save paramers to localStorage when page exit
+    window.onbeforeunload = () => {
+        // set stop;
+        MetaData.set_stop();
+
+        for (let [key, value] of Object.entries(MetaData)) {
+            if (key[0] == "_") {
+                continue;
+            }
+            if (typeof value == "function") {
+                continue;
+            }
+            let input_tag_id = $(`#data_${key}`);
+            if (input_tag_id.length == 0) {
+                continue;
+            }
+
+            // if is checkbox
+            if (input_tag_id.attr("type") == "checkbox") {
+                localStorage.setItem(key, input_tag_id.prop("checked"));
+            } else {
+                localStorage.setItem(key, input_tag_id.val());
+            }
+        }
+    }
+
+    // load parameters from localStorage when page loaded
+    $(document).ready(function () {
+        for (let [key, value] of Object.entries(MetaData)) {
+            if (key[0] == "_") {
+                continue;
+            }
+            if (typeof value == "function") {
+                continue;
+            }
+            let data_tag_id = $(`#data_${key}`);
+            if (data_tag_id.length == 0) {
+                continue;
+            }
+            if (data_tag_id.attr("type") == "checkbox") {
+                let new_value = localStorage.getItem(key) == "true";
+                data_tag_id.prop("checked", new_value);
+                MetaData.set_value(key, new_value);
+
+                data_tag_id.on('change', function () {
+                    let new_value = data_tag_id.prop("checked");
+                    MetaData.set_value(key, new_value);
+                });
+
+            } else {
+                let new_value = localStorage.getItem(key) || value;
+                data_tag_id.val(new_value);
+                MetaData.set_value(key, new_value);
+
+                let echo_tag_id = $(`#echo_${key}`);
+                if (echo_tag_id.length > 0) {
+                    echo_tag_id.text(data_tag_id.val());
+                }
+
+                // bind data tag to echo tag
+                data_tag_id.on('input', function () {
+                    let new_value = data_tag_id.val();
+                    MetaData.set_value(key, new_value);
+                    let echo_tag_id = $(`#echo_${key}`);
+                    if (echo_tag_id.length > 0) {
+                        echo_tag_id.text(new_value);
+                    }
+                });
+            }
+        }
+    });
+
+</script>
+
+</html>
