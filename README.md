@@ -22,7 +22,7 @@ make
 
 ## Introduction
 
-The main code is `lrqk_attention.py`. 
+The main implementation is `lrqk_attention.py`. 
 We test with batchsize=1.
 
 ### Demos
@@ -38,9 +38,9 @@ To evaluate with opencompass, please run
 # set visible device in need
 export CUDA_VISIBLE_DEVICES=<list of avaliables GPUs>
 # Run the evaluation
-python ./opencompass_run.py --reuse "latest" ./eval_configs/<configuration file.py>
+python ./opencompass_run.py --reuse "latest" ./eval_configs_lrqk/<configuration file.py>
 # or 
-./opencompass_run.py --reuse "latest" ./eval_configs/<configuration file.py>
+./opencompass_run.py --reuse "latest" ./eval_configs_lrqk/<configuration file.py>
 # If this file has the permission to be executed.
 ```
 where 
@@ -62,8 +62,19 @@ export CUDA_VISIBLE_DEVICES=<list of avaliables GPUs>
 # Run the webui
 uvicorn webui_attention_track:app --host 0.0.0.0 --port 8089
 ```
-You can access the webui at `http://localhost:8089/`.
+We can access the webui at `http://localhost:8089/`.
 
 Note: package `uvicorn` is required. Please install it via `pip install uvicorn`.
 
+
+### Reference Datasets
+
+For better debugging, additional reference datasets are provided in [datasets_ref](./datasets_ref/). These datasets are collect from RULER and Wikitext. 
+Or perhaps we can generate them via opencompass with empty settings.
+
+```bash
+# we use a model that return empty string "" for all inputs, so that we can get the datasets.
+# please adjust the configuration based on the requirements.
+./opencompass_run.py -w <output of dataset> ./eval_configs_lrqk/eval_seq_rulers_empty.py
+```
 
