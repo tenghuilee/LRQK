@@ -13,12 +13,6 @@ from lrqk_attention import *
 # TRITON_LIBCUDA_PATH =
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 # os.environ["TRITON_LIBCUDA_PATH"] = "~/Tools/cuda-12.1/targets/x86_64-linux/lib/stubs"
-# os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-# TRITON_LIBCUDA_PATH = /work1/tenghui/Tools/cuda12.6/targets/x86_64-linux/lib/stubs
-# CUDA_HOME = /work1/tenghui/Tools/cuda12.6
-
-
-# os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 device = torch.device("cuda:0")
 # %%
@@ -146,33 +140,3 @@ with torch.no_grad():
     print("number of output tokens:", outputs.shape[-1] - in_seq_len)
     print("time cost:", time_end - time_begin)
 
-
-# %%
-
-# # histogram of the average time cost
-# time_cost_records = []
-# for _ in range(20):
-#     with torch.no_grad() and torch.autocast("cuda", dtype=torch.bfloat16):
-#         time_begin = time.time()
-#         outputs = model.generate(
-#             **inputs,
-#             max_new_tokens=128,
-#             # past_key_values=cache_utils.DynamicCache(),
-#             # eos_token_id=tokenizer.eos_token_id,
-#             past_key_values=DynamicLRQKCache(
-#                 num_key_value_groups=num_key_value_groups,
-#                 r=32,
-#                 num_active_tokens=2048,
-#                 lite_tokens=64,
-#                 max_iter=(2, 2),
-#                 tol=(1e-4, 1e-4),
-#                 lwattn_factory=LightAttentionIndicesOffloadPrefill,
-#             ),
-#             do_sample=False,
-#         )
-#         time_end = time.time()
-#     time_cost_records.append(time_end - time_begin)
-#     print("time cost:", time_cost_records[-1])
-
-# print("time cost records:", time_cost_records)
-# print("average time cost:", sum(time_cost_records) / len(time_cost_records))
