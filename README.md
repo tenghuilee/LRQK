@@ -22,7 +22,7 @@ make
 
 ## Introduction
 
-The main implementation is `lrqk_attention.py`. 
+The main implementation is [lrqk_attention.py](./lrqk_attention.py). 
 We test with batchsize=1.
 
 ### Demos
