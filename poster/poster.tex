@@ -1,0 +1,451 @@
+% !TEX program = xelatex
+% !TEX TS-program = xelatex
+% !LW recipe = xelatex
+
+\documentclass{article}
+\usepackage{fix-cm} % fixes the font size of Computer Modern
+\usepackage[paperwidth=24in,paperheight=36in,landscape,margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[fontsize=21pt]{fontsize}
+\usepackage{helvet}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{tikz}
+% \usetikzlibrary{positioning,shadows.blur}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{mwe} % Provides example images
+\usepackage{enumitem} % For customizing itemize
+\usepackage{setspace} % For line spacing
+\usepackage{multicol} % For multiple columns
+% \usepackage[fixed]{fontawesome5}
+
+% \usepackage{emoji}
+% \setemojifont{Apple Color Emoji}
+
+\usepackage{subfig}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\newcommand{\RETURN}{\STATE \textbf{return }}
+\newcommand{\mulcolc}{\multicolumn{1}{c}}
+
+\usepackage{multirow} % multirow
+
+% === HTML-style Color Definitions ===
+\definecolor{background}{HTML}{ffffff}
+\definecolor{titlebgcolor}{HTML}{005000}
+% \definecolor{titlebgcolor}{HTML}{000000}
+\definecolor{sectioncolor}{HTML}{0064b4}
+% \definecolor{sectioncolor}{HTML}{000000}
+\definecolor{bodytextcolor}{HTML}{344854}
+\definecolor{textblack}{HTML}{000000}
+
+% Set page background
+\pagecolor{background}
+
+% Set main font sizes with 1.2 line spacing
+\newcommand{\mainfontsize}{\fontsize{21}{25}\selectfont} %
+\newcommand{\itemfontsize}{\fontsize{12}{14}\selectfont} %
+\newcommand{\sectitlefontsize}{\fontsize{34}{34}\selectfont} %
+\newcommand{\titlefontsize}{\fontsize{55}{55}\selectfont} %
+\newcommand{\captionfontsize}{\fontsize{14}{17}\selectfont} %
+
+% Redefine itemize environment
+\setlist[itemize]{
+  leftmargin=*,
+  label=\textcolor{blocktitlebgcolor}{\textbullet},
+  font=\itemfontsize,
+  topsep=6pt,
+  partopsep=0pt,
+  parsep=3pt,
+  itemsep=3pt
+}
+
+\setlist[itemize,1]{
+  label={\textbullet},
+  font={\itemfontsize}
+}
+
+\setlist[itemize,2]{
+  % label={\textendash},
+  label={\textbullet},
+  font={\itemfontsize}
+}
+
+% Custom title command
+\newcommand{\postertitle}[1]{%
+    {\titlefontsize\color{titlebgcolor}\bfseries{#1}\par}%
+    \vspace{1em}
+}
+
+% Custom headline command  
+\newcommand{\posterheadline}[1]{%
+    {\noindent\raggedright\sectitlefontsize\color{sectioncolor}\bfseries{#1}\par\vspace{1em}}%
+}
+
+% Custom section command
+\newcommand{\postersection}[2]{%
+    \vspace{1em}
+    {\noindent\raggedright\sectitlefontsize\color{sectioncolor}\bfseries{#1}\par}%
+    \if\relax\detokenize{#2}\relax\else
+        {{\noindent\raggedright\mainfontsize\color{textblack}{#2}\par}}%
+    \fi
+    \vspace{1em}
+}
+
+% Simple caption commands
+% Numbered caption commands
+\newcounter{figurecounter}
+\newcounter{tablecounter}
+
+\newcommand{\figurecaption}[1]{%
+    \par\raggedright\stepcounter{figurecounter}
+    {\captionfontsize{#1}\par}
+}
+
+\newcommand{\tablecaption}[1]{%
+    \par\raggedright\stepcounter{tablecounter}
+    {\captionfontsize{#1}\par}
+}
+
+\newenvironment{reference}{
+    {\color{textblack}\mainfontsize{References}\par}
+    \fontsize{14}{16}\selectfont
+}{}
+
+% Use fontspec to load system fonts (requires XeLaTeX or LuaLaTeX)
+\usepackage{fontspec}
+\setmainfont{Arial} % Optional: set entire document to Arial
+\setsansfont{Arial}
+\setmonofont{Courier New}
+% Set global line spacing to 1.2
+\setstretch{1.2}
+
+\color{bodytextcolor}
+
+\setlength{\columnsep}{0.03\textwidth}
+%%%%%%%%%%%%%%
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\softmax}{softmax}
+
+\begin{document}
+
+\thispagestyle{empty}
+
+% Set main document font size
+\mainfontsize
+
+% Header section with title and logo
+\begin{minipage}[t]{0.50\textwidth}
+  \vspace{0pt}
+  \noindent
+  \postertitle{Efficient Low Rank Attention for Long-Context Inference in Large Language Models}
+\end{minipage}%
+\hspace{0.02\textwidth}
+\begin{minipage}[t]{0.10\textwidth}
+  \vspace{0pt}
+  \fontsize{16}{20}\selectfont
+  Tenghui Li, Guoxu Zhou, \\
+  Xuyang Zhao, Yuning Qiu, \\
+  Qibin Zhao
+\end{minipage}
+%
+\hfill
+%
+\begin{minipage}[t]{0.35\textwidth}
+  \vspace{0pt}
+  \raggedleft
+  % Uncomment and adjust the path to your logo
+  % \includegraphics[width=0.8\textwidth]{instituteLogo.png}
+  % \textcolor{titlebgcolor}{\rule{0.8\textwidth}{3cm}} % Placeholder for logo
+  \begin{tikzpicture}
+    \node (gdut) at (0,0) {
+      \includegraphics[height=4.2cm]{figs/gdut_logo2.png}
+    };
+    \node[anchor=west] (riken) at (gdut.east) {
+      \includegraphics[height=4.2cm]{figs/riken_logo.pdf}
+    };
+    \node[anchor=west] (chiba) at (riken.east) {
+      \includegraphics[height=4.2cm]{figs/chiba_logo.jpg}
+    };
+    \node[anchor=west] (neruips) at (chiba.east) {
+      \includegraphics[height=4.2cm]{figs/neruips_logo.png}
+    };
+  \end{tikzpicture}
+\end{minipage}
+
+\vspace{1em}
+
+\raggedright
+% 使用 multicol 环境创建三列布局，确保顶部对齐
+\begin{multicols}{3}
+  \raggedcolumns % 允许各列高度不同，但保持顶部对齐
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \posterheadline{Introduction}
+
+  % Include a brief overview of the paper, or the basic idea of the proposed method.
+  \begin{itemize}
+    \item \textbf{Challenge:}
+          Long context sequences (i.e., \textgreater 32K) induce linearly increasing KV cache, causing out-of-memory (OOM) failures in LLM inference.
+
+    \item \textbf{Options:}
+          \begin{itemize}
+            \item \textit{Pruning:} Memory reduction via KV pair discarding (accuracy loss).
+            \item \textit{Offloading:} CPU storage of full KV cache (high data transfer overhead).
+            \item \textit{Quantization:} Reduce the bits of floats in KV cache (precision loss).
+          \end{itemize}
+
+    \item \textbf{Target:} Efficient memory management for long-context LLM inference (maintain accuracy and avoid heavy data transfers).
+    \item \textbf{Idea:} Offload KV cache to CPU but \textbf{only select} relevant pairs for GPU inference.
+
+    \item \textbf{Proposed:}
+          \begin{itemize}
+            \item \textit{Identify relevant KV pairs $\rightarrow$ Joint Low-Rank Approximation}:
+                  For $\mathbf{Q}, \mathbf{K} \in \mathbb{R}^{l \times d}$ (consider last two dimensions), approximate interaction matrix as: \[
+                    \mathbf{Q}\mathbf{K}^{\top} \approx \mathbf{A}_{Q} \mathbf{A}_{K}^{\top} \quad \text{with} \quad \mathbf{A}_{Q}, \mathbf{A}_K \in \mathbb{R}^{l \times r}, ~ r < d
+                  \]
+
+            \item \textit{Avoid reconstruction errors $\rightarrow$ Precision-Preserving Attention:}
+                  Maintain full-precision computation using original keys/values: \[
+                    \text{Attention}(\mathbf{q}_{t}, \mathbf{K}_{\Omega, t}, \mathbf{V}_{\Omega, t})
+                  \]
+
+                  Avoid reconstruction as \(\mathbf{K}_{\Omega, t} \leftarrow \text{rec}(\text{factors } \mathbf{K}, \Omega_{t})\) or \(\mathbf{V}_{\Omega, t} \leftarrow \text{rec}(\text{factors } \mathbf{V}, \Omega_{t})\).
+
+            \item \textit{Memory management $\rightarrow$ Hybrid Memory Architecture:} CPU-GPU coordination with asynchronous transfers and hierarchical caching.
+          \end{itemize}
+  \end{itemize}
+
+  \vspace*{1em}
+
+  \begin{center}
+    \includegraphics[width=0.50\linewidth]{./main_time_fill.pdf}
+    \figurecaption{\textbf{Time comparison} with full GPU, full CPU and the proposed LRQK methods.
+      The orange block is the selection operation of KV pairs.
+      The black blocks are cache loading operations.
+      The blocks above line mean GPU operations and the blocks below are CPU operations.}
+  \end{center}
+
+  \vspace*{1em}
+
+  \(\mathbf{Q} \mathbf{K}^{\top}\) has low rank structure,
+  \vspace{-1em}
+  \begin{equation*}
+    \text{rank}(\mathbf{Q}\mathbf{K}^\top) \leq \min\left(\text{rank}(\mathbf{Q}), \text{rank}(\mathbf{K}^\top)\right) = \min\left(\text{rank}(\mathbf{Q}), \text{rank}(\mathbf{K})\right).
+  \end{equation*}
+  \begin{figure}[H]
+    \vspace{-2em}
+    \centering
+    \subfloat[Qwen \(\mathbf{Q}\)]{
+      \includegraphics[width=0.22\linewidth]{figs/qwen-2.5-7B_oqs_max_token_1_mean.png}
+    }
+    \subfloat[Qwen \(\mathbf{K}\)]{
+      \includegraphics[width=0.22\linewidth]{figs/qwen-2.5-7B_oks_max_token_1_mean.png}
+    }
+    \subfloat[LLaMA3 \(\mathbf{Q}\)]{
+      \includegraphics[width=0.22\linewidth]{figs/llama-3-8B-1M_oqs_max_token_1_mean.png}
+    }
+    \subfloat[LLaMA3 \(\mathbf{K}\)]{
+      \includegraphics[width=0.22\linewidth]{figs/llama-3-8B-1M_oks_max_token_1_mean.png}
+    }
+    \figurecaption{Examples of the mean of singular values of the query and key matrix over different layers on Qwen2.5-7B and LLaMA-3-8B-1M models. The singular values are summed over batches and attention heads.}
+  \end{figure}
+
+
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \columnbreak
+
+
+
+
+  \postersection{Algorithm}{}
+
+  % add a brief description of the algorithm
+  Within the standard LLM inference framework, prompt processing (prefill) followed by autoregressive generation (decode). This approach introduces a low-rank attention and a dynamic CPU-GPU KV management.
+
+  \vspace*{1em}
+
+  \textbf{Prefill (prompt processing):} To derive a low rank representation \(\mathbf{A}_{Q}, \mathbf{A}_{K} \in \mathbb{R}^{l \times r}\), and \(\mathbf{B}_{Q}, \mathbf{B}_{K} \in \mathbb{R}^{r \times d}\) from the original query and key matrices \(\mathbf{Q}, \mathbf{K} \in \mathbb{R}^{l \times d}\),
+  \begin{equation*}
+    \label{equ:prefill_objective}
+    \argmin_{\mathbf{A}_{Q}, \mathbf{B}_{Q}, \mathbf{A}_{K}, \mathbf{B}_{K}} \dfrac{1}{2} \left\|
+    \mathbf{Q} \mathbf{K}^\top - \mathbf{A}_{Q} \mathbf{A}_{K}^\top
+    \right\|_\text{F}^2,
+    \text{s.t. }
+    \mathbf{Q} = \mathbf{A}_{Q} \mathbf{B}_{Q},
+    \mathbf{K} = \mathbf{A}_{K} \mathbf{B}_{K}.
+  \end{equation*}
+
+  %%%% 
+  \textbf{Decode (autoregressive generation):} Update the low rank factors during inference.
+  At step $t$, continually compute smaller \(\widehat{\mathbf{q}}_{t}, \widehat{\mathbf{k}}_{t} \in \mathbb{R}^{1\times r} \) from current input \(\mathbf{q}_{t}, \mathbf{k}_{t} \in \mathbb{R}^{1\times d} \) and update the low rank factors \(\mathbf{B}_{Q,t}, \mathbf{B}_{K,t} \in \mathbb{R}^{r \times d} \),
+
+  \begin{equation*}
+    \label{equ:decoding}
+    \begin{aligned}
+      \argmin_{\widehat{\mathbf{q}}_t, \widehat{\mathbf{k}}_t} &
+      \dfrac{1}{2} \left\| \widehat{\mathbf{q}}_{t} \mathbf{B}_{Q, t-1} - \mathbf{q}_{t}\right\|_\text{F}^2 +
+      \dfrac{1}{2} \left\| \widehat{\mathbf{k}}_{t} \mathbf{B}_{K, t-1} - \mathbf{k}_{t}\right\|_\text{F}^2,        \\
+      \text{s.t. }                                             &
+      \widehat{\mathbf{q}}_t \widehat{\mathbf{k}}_t^{\top} = \mathbf{q}_t \mathbf{k}_t^{\top},
+      \widehat{\mathbf{q}}_{t} \mathbf{A}_{K, \Omega, t-1}^{\top} = \mathbf{q}_{t} \mathbf{K}_{\Omega, t-1}^{\top}. \\
+    \end{aligned}
+  \end{equation*}
+
+  \begin{itemize}
+    \item Select top-$k$ relevant tokens using proxy attention:
+          \begin{equation*}
+            \Omega_k = \operatorname{topk}\left( \widehat{\mathbf{q}}_t \mathbf{A}_{K,t-1}^\top,\, k \right)
+          \end{equation*}
+          
+    \item Fetch corresponding $\{\mathbf{k}_i, \mathbf{v}_i\}_{i \in \Omega_k}$ from CPU cache; merge with GPU-resident KV cache.
+
+    \item Update basis matrices $\mathbf{B}_{Q,t}, \mathbf{B}_{K,t}$ and asynchronously offload $\mathbf{k}_t, \mathbf{v}_t$ to CPU. 
+  \end{itemize}
+
+
+
+  % 第二列
+  \postersection{Overview}{
+    Brief overview of the proposed Low Rank Query and Key attention (LRQK) method
+  }
+
+  \begin{itemize}
+    \item \textbf{Task:} Introduce a low rank attention to approximate the full attention.
+    \item \textbf{Method:} Derive a low rank representation from the original query and key matrices, and update the low rank factors during inference.
+  \end{itemize}
+
+  \begin{center}
+    \includegraphics[width=0.92\linewidth]{./main_figure.pdf}
+    \figurecaption{Subscript \(\Omega\) denotes the selected tokens, \(t\) denotes the current token. \(\mathbf{q}_t, \mathbf{k}_t\) are the original query and key, \(\widehat{\mathbf{q}}_t, \widehat{\mathbf{k}}_t\) are the approximated query and key. \(\mathbf{A}_{K,t}\) is the low rank key matrix. \(\mathbf{K}_{\Omega, t-1}', \mathbf{V}_{\Omega, t-1}'\) are GPU cache \(\mathbf{K}_{\Omega, t-1}, \mathbf{V}_{\Omega, t-1}\) merged with fetched CPU keys and values.}
+  \end{center}
+
+
+
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \columnbreak
+
+  \postersection{Hyperparameters}{}
+
+  LRQK introduces four key hyperparameters. Based on extensive experiments, it is recommended:
+  \begin{itemize}
+    \item \textbf{Rank $r = 32$}: Balances approximation quality and cost ($r \in \{8,16,32,48\}$; head dim typically 128).
+    \item \textbf{Top-$k = 2048$}: Scales with context length; recommend \(k=256 ~ (\le 4 {K})\), \(512 \sim 1024 ~ (8{K} \sim 16{K})\), \(2048 (\ge 32{K})\).
+    \item \textbf{Lite tokens}$=64$: Always keep recent tokens on GPU; robust across tasks.
+    \item \textbf{Convergence}: iterations 2, tolerance 1e-2; sufficient for stable updates.
+  \end{itemize}
+
+  \noindent\textbf{Tuning tip:} Start with defaults. Reduce $k$ or $r$ to save memory; increase $k$ for accuracy.
+
+  \postersection{Experiments}{}
+
+  \begin{table}[H]
+    \setlength{\tabcolsep}{2pt}
+    \scriptsize
+    \tablecaption{Comparison of different models and methods on RULER 128K (left; top-\(2048\), lite tokens=\(64\)) and LongBench (right; rank \(r=16\), lite tokens=64). Evaluations are empowered by OpenCompass.}
+    \vspace{-2em}
+    \begin{center}
+      \begin{tabular}{l|rrrrrrrrrr||l|rrrrrrrrr}
+        \toprule
+        Methods       & S1     & S2     & MK1            & MK2            & MQ             & MV             & QA-1           & QA-2           & VT             & FWE            &             & NQA            & MQA            & GRep           & SAM            & PRetr          & LCC            \\
+        \midrule
+        Llama-3-8B-1M & 100.00 & 100.00 & 98.96          & 98.96          & 98.96          & 95.57          & 75.00          & 48.96          & 78.54          & 71.85          &             & 18.98          & 41.84          & 34.18          & 35.96          & 81.50          & 56.07          \\
+        Loki          & 18.75  & 1.04   & 2.08           & 0.00           & 1.56           & 0.78           & 4.17           & 13.54          & 26.04          & 25.35          &             & 2.26           & 10.19          & 28.97          & 7.84           & 40.52          & 31.44          \\
+        InfiniGen     & 100.00 & 98.96  & 84.38          & 53.13          & 63.28          & 54.95          & 65.63          & 48.96          & \textbf{81.67} & 50.35          &             & 14.39          & 31.46          & 27.38          & 21.97          & 74.30          & 38.58          \\
+        Quest         & 100.00 & 100.00 & \textbf{98.96} & 77.08          & 97.65          & 93.49          & 60.42          & 50.00          & 77.08          & 65.63          &             & \textbf{20.13} & 36.63          & 27.11          & 35.63          & 79.00          & 53.64          \\
+        ShadowKV      & 100.00 & 100.00 & 97.92          & \textbf{98.96} & 96.88          & 95.83          & 72.92          & 52.08          & \textbf{81.67} & \textbf{72.57} &             & 17.17          & 39.73          & 31.62          & 35.87          & 80.00          & 63.93          \\
+        \midrule
+        LRQK \(r=32\) & 81.00  & 100.00 & 97.00          & 42.00          & \textbf{99.25} & \textbf{98.00} & \textbf{75.00} & \textbf{53.00} & 80.20          & 69.67          & top\(1024\) & 16.52          & \textbf{40.48} & 20.40          & 26.35          & 89.00          & 66.13          \\
+        LRQK \(r=16\) & 63.67  & 69.00  & 50.00          & 90.00          & 80.25          & 81.50          & 70.00          & 56.00          & 64.00          & 63.67          & top\(2048\) & 15.86          & 40.15          & \textbf{34.15} & \textbf{36.64} & \textbf{91.50} & \textbf{66.53} \\
+        \bottomrule
+        Llama-3.1-8B  & 100.00 & 100.00 & 98.96          & 91.67          & 98.96          & 95.31          & 82.29          & 47.92          & 68.96          & 71.18          &             & 31.56          & 55.10          & 34.45          & 29.84          & 100.00         & 67.31          \\
+        Loki          & 68.75  & 32.29  & 32.29          & 20.83          & 42.71          & 28.65          & 41.67          & 33.33          & 24.79          & 29.86          &             & 2.31           & 18.89          & 31.16          & 15.91          & 94.88          & 44.60          \\
+        InfiniGen     & 100.00 & 77.08  & 78.13          & 13.54          & 58.07          & 47.40          & 65.63          & 41.67          & 60.83          & 50.35          &             & 27.23          & 52.72          & 29.61          & 24.42          & 98.93          & 56.89          \\
+        Quest         & 100.00 & 98.96  & 97.92          & 34.38          & 93.49          & 88.54          & 70.83          & 44.79          & 65.63          & \textbf{68.40} &             & 29.70          & 49.04          & 30.43          & 29.85          & 98.50          & 57.35          \\
+        ShadowKV      & 100.00 & 100.00 & 100.00         & \textbf{83.33} & 97.92          & 92.19          & \textbf{81.25} & \textbf{48.96} & 67.08          & 64.93          &             & 30.93          & 55.20          & \textbf{32.79} & \textbf{30.40} & \textbf{99.50} & \textbf{66.03} \\
+        \midrule
+        LRQK \(r=32\) & 87.00  & 100.00 & 98.00          & 80.00          & \textbf{98.25} & \textbf{96.25} & 81.00          & 41.00          & \textbf{70.00} & 44.67          & top\(1024\) & 29.01          & \textbf{55.85} & 19.50          & 12.02          & \textbf{99.50} & 24.60          \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+  \end{table}
+
+  % \begin{table}[H]
+  %   \setlength{\tabcolsep}{0.5em}
+  %   \scriptsize
+  %   \tablecaption{Performance comparison on NVIDIA GeForce RTX 3090 (24 GB, 250W) for text summarization (LongBench, 32K context). Vanilla attention uses 2 GPUs; other methods use 1 GPU. Tokens/s is computed via (number of all tokens / total time).}
+  %   \centering
+  %   \begin{tabular}{r|rr|r|rrrr}
+  %     \toprule
+  %                           &
+  %     \multicolumn{2}{c|}{Vanilla}
+  %                           &
+  %     ShadowKV              &
+  %     \multicolumn{4}{c}{LRQK}                                                                                            \\
+  %                           &
+  %                           &
+  %                           &
+  %                           &
+  %     \multicolumn{2}{c}{
+  %       \(k=2048\)
+  %     }                     &
+  %     \multicolumn{2}{c}{
+  %       \(k=1024\)
+  %     }                                                                                                                   \\
+  %                           & GPU0                         & GPU1    &        & \(r=32\) & \(r=16\) & \(r=32\) & \(r=16\) \\
+  %     \midrule
+  %     Average GPU Util (\%) & 38.61                        & 48.38   & 58.00  & 63.64    & 65.29    & 56.86    & 51.15    \\
+  %     Max GPU Util (\%)     & 99.95                        & 100.00  & 100.00 & 100.00   & 100.00   & 100.00   & 100.00   \\
+  %     GPU Memory (GB)       & 16.94                        & 17.56   & 17.93  & 19.82    & 18.85    & 19.51    & 19.33    \\
+  %     GPU Power (W)         & 187.24                       & 233.21  & 243.85 & 203.98   & 211.96   & 199.59   & 199.85   \\
+  %     Tokens/s              & \multicolumn{2}{c|}{1775.70} & 1083.55 & 489.39 & 556.22   & 603.05   & 646.33              \\
+  %     Time (s)              & \multicolumn{2}{c|}{17.87}   & 29.29   & 64.84  & 57.04    & 52.62    & 57.04               \\
+  %     \bottomrule
+  %   \end{tabular}
+  % \end{table}
+  \begin{table}[H]
+    \tablecaption{Throughput comparison (tokens/s) for `meta-llama/Llama-3.1-8B-Instruct-1M' on RULER QA-2 across context lengths. LRQK default maintains stable decode performance while avoiding OOM at 64K tokens.}
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{8pt}
+    \begin{tabular}{r|rr|rr|rr|rr|rr}
+      \toprule
+                               &
+      \multicolumn{2}{c|}{4K}  &
+      \multicolumn{2}{c|}{8K}  &
+      \multicolumn{2}{c|}{16K} &
+      \multicolumn{2}{c|}{32K} &
+      \multicolumn{2}{c}{64K}                                                                                                                                                                                          \\
+                               & \mulcolc{prefill} & \multicolumn{1}{c|}{decode} & \mulcolc{prefill} & \multicolumn{1}{c|}{decode} & \mulcolc{prefill} & \multicolumn{1}{c|}{decode} & \mulcolc{prefill} & \multicolumn{1}{c|}{decode} & \mulcolc{prefill} & \mulcolc{decode} \\
+      \midrule
+      GPU only                 & 37500.29    & 35.40                  & 37734.19    & 35.64                  & 33649.79    & 35.36                  & 32111.45    & 35.77                  & OOM         & OOM         \\
+      CPU offload              & 6945.10     & 4.31                   & 6984.35     & 4.32                   & 7073.53     & 2.40                   & 4849.19     & 0.98                   & 4131.00     & 0.50        \\
+      LRQK default             & 7120.49     & 5.68                   & 7280.39     & 5.72                   & 6379.91     & 5.49                   & 5436.66     & 5.36                   & 4103.05     & 6.80        \\
+      LRQK no hit/miss         & 7180.64     & 2.50                   & 6747.19     & 2.53                   & 5317.06     & 2.31                   & 4920.02     & 2.48                   & 4163.86     & 1.95        \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+
+  \begin{reference}
+    \begin{itemize}
+      \item Qwen Team. Qwen2.5: A party of foundation models.
+      \item Llama Team, AI@Meta. The Llama 3 herd of models.
+      \item Hanshi Sun, Li-Wen Chang, Wenlei Bao, et al. ShadowKV: KV cache in shadows for high-throughput long-context LLM inference.
+    \end{itemize}
+  \end{reference}
+\end{multicols}
+
+\begin{tikzpicture}[remember picture,overlay]
+  \node[anchor=south east,xshift=-0.2in,yshift=0.2in] at (current page.south east) {
+    \includegraphics[width=2in]{figs/arxiv_qrcode-with-logo.png}
+  };
+\end{tikzpicture}
+
+
+\end{document}

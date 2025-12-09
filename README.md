@@ -1,5 +1,10 @@
 # Efficient Low Rank Attention for Long-Context Inference in Large Language Models
 
+![poster-60dpi](./poster/poster-dpi60-1.png)
+
+[poster](./poster/poster-dpi300-1.png), [neurips.cc](https://neurips.cc/virtual/2025/loc/san-diego/poster/118451), [arxiv.org](https://arxiv.org/abs/2510.23649)
+
+
 code updating ...
 
 ## Requirements

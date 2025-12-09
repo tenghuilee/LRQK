@@ -1,0 +1,226 @@
+\documentclass{article}
+\usepackage[paperwidth=24in,paperheight=36in,landscape,margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shadows.blur}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{mwe} % Provides example images
+\usepackage{enumitem} % For customizing itemize
+\usepackage{setspace} % For line spacing
+\usepackage{multicol} % For multiple columns
+
+% === HTML-style Color Definitions ===
+\definecolor{background}{HTML}{ffffff}
+% \definecolor{titlebgcolor}{HTML}{005000}
+\definecolor{titlebgcolor}{HTML}{000000}
+% \definecolor{sectioncolor}{HTML}{0064b4}
+\definecolor{sectioncolor}{HTML}{000000}
+\definecolor{bodytextcolor}{HTML}{344854}
+\definecolor{textblack}{HTML}{000000}
+
+% Set page background
+\pagecolor{background}
+
+% Set main font sizes with 1.2 line spacing
+\newcommand{\mainfontsize}{\fontsize{21}{25.2}\selectfont} %
+\newcommand{\itemfontsize}{\fontsize{12}{14.4}\selectfont} %
+\newcommand{\sectitlefontsize}{\fontsize{34}{34}\selectfont} %
+\newcommand{\titlefontsize}{\fontsize{55}{55}\selectfont} %
+\newcommand{\captionfontsize}{\fontsize{20}{24}\selectfont} %
+
+% Redefine itemize environment
+\setlist[itemize]{
+  leftmargin=*,
+  label=\textcolor{blocktitlebgcolor}{\textbullet},
+  font=\itemfontsize,
+  topsep=6pt,
+  partopsep=0pt,
+  parsep=3pt,
+  itemsep=3pt
+}
+
+\setlist[itemize,1]{
+  label={\textbullet},
+  font={\itemfontsize}
+}
+
+\setlist[itemize,2]{
+  label={\textendash},
+  font={\itemfontsize}
+}
+
+% Custom title command
+\newcommand{\postertitle}[1]{%
+    {\titlefontsize\color{titlebgcolor}\bfseries{#1}\par}%
+    \vspace{1em}
+}
+
+% Custom headline command  
+\newcommand{\posterheadline}[1]{%
+    {\noindent\raggedright\sectitlefontsize\color{sectioncolor}\bfseries{#1}\par\vspace{1em}}%
+}
+
+% Custom section command
+\newcommand{\postersection}[2]{%
+    \vspace{1em}
+    {\noindent\raggedright\sectitlefontsize\color{sectioncolor}\bfseries{#1}\par}%
+    {\noindent\raggedright\mainfontsize\color{textblack}{#2}\par}
+    \vspace{1em}
+}
+
+% Simple caption commands
+% Numbered caption commands
+\newcounter{figurecounter}
+\newcounter{tablecounter}
+
+\newcommand{\figurecaption}[1]{%
+    \par\vspace{1em}
+    \centering
+    \stepcounter{figurecounter}
+    {\captionfontsize{#1}\par}
+}
+
+\newcommand{\tablecaption}[1]{%
+    \vspace{1em}
+    \centering
+    \stepcounter{tablecounter}
+    {\captionfontsize{#1}\par}
+}
+
+\newenvironment{reference}{
+    {\color{textblack}\mainfontsize{References}\par\vspace{1em}}
+    \fontsize{14}{16}\selectfont
+}{}
+
+% Use fontspec to load system fonts (requires XeLaTeX or LuaLaTeX)
+\usepackage{fontspec}
+\setmainfont{Arial} % Optional: set entire document to Arial
+% Set global line spacing to 1.2
+\setstretch{1.2}
+
+\color{bodytextcolor}
+
+\setlength{\columnsep}{0.03\textwidth}
+
+\begin{document}
+
+% Set main document font size
+\mainfontsize
+
+% Header section with title and logo
+\begin{minipage}[t]{0.45\textwidth}
+    \vspace{0pt}
+    \postertitle{Title of research poster in 55pt should not exceed two lines}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.2\textwidth}
+    \vspace{0pt}
+    \fontsize{12}{15}\selectfont
+    Author Name, Author Name, \\
+    Author Name, Author Name, \\
+    Author Name
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.3\textwidth}
+    \vspace{0pt}
+    \raggedleft
+    % Uncomment and adjust the path to your logo
+    % \includegraphics[width=0.8\textwidth]{instituteLogo.png}
+    % \textcolor{titlebgcolor}{\rule{0.8\textwidth}{3cm}} % Placeholder for logo
+    \includegraphics[width=0.5\linewidth]{figs/neruips_logo.png}
+\end{minipage}
+
+\vspace{1em}
+
+\raggedright
+% 使用 multicol 环境创建三列布局，确保顶部对齐
+\begin{multicols}{3}
+\raggedcolumns % 允许各列高度不同，但保持顶部对齐
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\posterheadline{Headline in 34pt should not extend beyond 2-3 lines}
+
+
+This section is an example of a paragraph. When creating sections, regardless of whether you're putting in text or images, always try to align to the edges of the yellow guidelines. This poster canvas is broken into 3 columns, and aligning to the edges will make it much easier for viewers to differentiate sections and read information. The same is true of horizontal spaces between sections, try to space them equally and with a good amount of breathing room in between each.
+
+\vspace{1em}
+
+\begin{itemize}
+    \item Bulleted list item with 1.2 line spacing in the list environment
+    \item Bulleted list item that spans multiple lines to demonstrate how the line spacing works within list items and between them
+    \item Bulleted list item
+    \item Bulleted list item
+    \begin{itemize}
+        \item Nested list item with proper line spacing
+        \item Another nested item that shows how the line spacing is maintained even in nested lists
+    \end{itemize}
+\end{itemize}
+
+\vfill
+
+\postersection{Section header in 34pt font}{Optional section descriptor in 21pt font}
+
+This section provides an introduction to the research topic. Using the article class with custom geometry gives us full control over the poster dimensions while maintaining all the formatting and spacing preferences. The 1.2 line spacing improves readability throughout the document.
+
+\vspace{1em}
+\begin{center}
+    \includegraphics[width=0.75\linewidth]{figs/poster_template_figure_0.png}
+    \figurecaption{Optional caption for images, charts, and graphs}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\columnbreak
+
+% 第二列
+\postersection{Section header in 34pt font}{Optional section descriptor in 21pt font}
+
+\begin{center}
+    \includegraphics[width=0.95\linewidth]{figs/poster_template_chart.png}
+\end{center}
+
+This section is an example of a paragraph.  When creating sections, regardless of whether you're putting in text or images, always try to align to the edges of the yellow guidelines. This poster canvas is broken into 3 columns, and aligning to the edges will make it much easier for viewers to differentiate sections and read information.
+
+\vspace{1em}
+\begin{center}
+    \includegraphics[width=0.90\linewidth]{figs/poster_template_fig_2.png}
+\end{center}
+
+\begin{center}
+    \includegraphics[width=1.0\linewidth]{figs/poster_template_table_1.png}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\columnbreak
+
+% 第三列
+\begin{center}
+    \includegraphics[width=0.75\linewidth]{figs/poster_template_chart_3.png}
+    \figurecaption{Optional caption for images, charts, and graphs}
+\end{center}
+
+\postersection{Section header in 34pt font}{Optional section descriptor in 21pt font}
+
+This section is an example of a paragraph.  When creating sections, regardless of whether you're putting in text or images, always try to align to the edges of the yellow guidelines. 
+
+\begin{center}
+    \includegraphics[width=0.80\linewidth]{figs/poster_template_fig_4.png}
+\end{center}
+
+\begin{reference}
+References in 14pt font 
+\begin{itemize}
+    \item Homer W Simpson (2013). “Donuts taste good.” In: IEEE 13th Internation Conference on Data Mining. IEEE, pp. 405-409
+    \item Marge Simpson (2010). “Blue hair looks nice.”. In: Nature communications 1, p. 622.
+    \item Bart Simpson (2013). “Hello”. In: IEEE Simpsons.
+    \item Marge Simpson et al. (2013). “Lorem Ipsum.” In: Advances in Neural Information Processing Systems 26. Ed. by Christopher J. C. Burges et al., pp. 27–29.
+\end{itemize}
+\end{reference}
+
+\end{multicols}
+
+\end{document}
