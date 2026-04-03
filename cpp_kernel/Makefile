@@ -1,6 +1,6 @@
 
 build: setup.py take_along_dim_grouped.cpp
-	pip install -e .
+	pip install -e . --no-build-isolation 
 
 clean:
 	rm -rf build *.egg-info __pycache__
